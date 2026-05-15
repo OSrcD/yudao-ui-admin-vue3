@@ -7,6 +7,7 @@
       :style="{ width: '100%', height: '100%' }"
       :data="workflowData"
       :provider="provider"
+      :customNodes="customNodes"
     />
     <div class="absolute top-30px right-30px">
       <el-button @click="testWorkflowModel" type="primary" v-hasPermi="['ai:workflow:test']">
@@ -61,12 +62,14 @@
 </template>
 
 <script setup lang="ts">
+import { ref, inject, Ref, createApp } from 'vue'
 import Tinyflow from '@/components/Tinyflow/Tinyflow.vue'
 import * as WorkflowApi from '@/api/ai/workflow'
-// TODO @lesan：要不使用 ICon 哪个组件哈
 import { Delete } from '@element-plus/icons-vue'
+import PuppeteerNodeConfig from './PuppeteerNodeConfig.vue'
 
-defineProps<{
+const props = defineProps<{
+  modelValue: any
   provider: any
 }>()
 
@@ -78,6 +81,27 @@ const paramsOfStartNode = ref({})
 const testResult = ref(null)
 const loading = ref(false)
 const error = ref(null)
+
+const customNodes = {
+  puppeteerNode: {
+    title: '大模型本地执行节点',
+    description: '通过本地 Puppeteer 环境执行 AI 自动化任务',
+    icon: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M19.5 9.5H21C21.55 9.5 22 9.95 22 10.5V14.5C22 15.05 21.55 15.5 21 15.5H19.5V17C19.5 18.66 18.16 20 16.5 20H7.5C5.84 20 4.5 18.66 4.5 17V15.5H3C2.45 15.5 2 15.05 2 14.5V10.5C2 9.95 2.45 9.5 3 9.5H4.5V8C4.5 6.34 5.84 5 7.5 5H10.5V3H13.5V5H16.5C18.16 5 19.5 6.34 19.5 8V9.5ZM17.5 9.5V8C17.5 7.45 17.05 7 16.5 7H7.5C6.95 7 6.5 7.45 6.5 8V17C6.5 17.55 6.95 18 7.5 18H16.5C17.05 18 17.5 17.55 17.5 17V9.5ZM9 11.5C9.83 11.5 10.5 10.83 10.5 10C10.5 9.17 9.83 8.5 9 8.5C8.17 8.5 7.5 9.17 7.5 10C7.5 10.83 8.17 11.5 9 11.5ZM16.5 10C16.5 10.83 15.83 11.5 15 11.5C14.17 11.5 13.5 10.83 13.5 10C13.5 9.17 14.17 8.5 15 8.5C15.83 8.5 16.5 9.17 16.5 10ZM15.5 15H8.5V13H15.5V15Z" fill="currentColor"/></svg>`,
+    group: 'tools',
+    parameters: [],
+    outputDefs: [
+      { name: 'taskId', description: '任务 ID', dataType: 'Number' },
+      { name: 'status', description: '状态', dataType: 'String' }
+    ],
+    render: (parent, node, flow) => {
+      const app = createApp(PuppeteerNodeConfig, {
+        node,
+        onUpdate: (newData) => flow.updateNodeData(node.id, newData)
+      })
+      app.mount(parent)
+    }
+  }
+}
 
 /** 展示工作流测试抽屉 */
 const testWorkflowModel = () => {
@@ -120,6 +144,7 @@ const goRun = async () => {
     }
 
     const data = {
+      id: props.modelValue?.id,
       graph: JSON.stringify(val),
       params: convertedParams
     }

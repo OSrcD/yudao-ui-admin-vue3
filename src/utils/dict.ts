@@ -325,5 +325,13 @@ export enum DICT_TYPE {
   MES_MD_AUTO_CODE_CYCLE_METHOD = 'mes_md_auto_code_cycle_method', // MES 编码规则循环方式
   MES_WM_BARCODE_FORMAT = 'mes_wm_barcode_format', // MES 条码格式
   MES_WM_BARCODE_BIZ_TYPE = 'mes_wm_barcode_biz_type', // MES 条码业务类型
-  MES_WM_PACKAGE_STATUS = 'mes_wm_package_status' // MES 装箱单状态
+  MES_WM_PACKAGE_STATUS = 'mes_wm_package_status', // MES 装箱单状态
+
+  // ========== BIZ - 业务模块 ==========
+  BIZ_ACCOUNT_PLATFORM = 'biz_account_platform', // 账号平台
+  BIZ_PROMPT_TEMPLATE_TYPE = 'biz_prompt_template_type', // 提示词模板分类
+  BIZ_MATERIAL_TYPE = 'biz_material_type', // 素材类型
+  BIZ_REPRODUCE_STATUS = 'biz_reproduce_status', // 复刻任务状态
+  BIZ_SCRAPER_CHECK_STATUS = 'biz_scraper_check_status', // 采集检查状态
+  BIZ_SCRAPER_COMMENT_STATUS = 'biz_scraper_comment_status' // 采集评论状态
 }

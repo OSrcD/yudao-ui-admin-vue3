@@ -5,7 +5,7 @@
 <script setup lang="ts">
 import { Item, Tinyflow as TinyflowNative } from './ui'
 import './ui/index.css'
-import { onMounted, onUnmounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref, toRaw } from 'vue'
 
 const props = defineProps<{
   className?: string
@@ -16,6 +16,7 @@ const props = defineProps<{
     knowledge?: () => Item[] | Promise<Item[]>
     internal?: () => Item[] | Promise<Item[]>
   }
+  customNodes?: Record<string, any>
 }>()
 
 const divRef = ref<HTMLDivElement | null>(null)
@@ -36,8 +37,9 @@ onMounted(() => {
     }
     tinyflow = new TinyflowNative({
       element: divRef.value as Element,
-      data: props.data || {},
-      provider: mergedProvider
+      data: toRaw(props.data) || {},
+      provider: toRaw(mergedProvider),
+      customNodes: toRaw(props.customNodes) || {}
     })
   }
 })

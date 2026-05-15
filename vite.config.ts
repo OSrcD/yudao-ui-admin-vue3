@@ -27,16 +27,16 @@ export default ({command, mode}: ConfigEnv): UserConfig => {
         server: {
             port: env.VITE_PORT, // 端口号
             host: "0.0.0.0",
+            hmr: false,
             open: env.VITE_OPEN === 'true',
             // 本地跨域代理. 目前注释的原因：暂时没有用途，server 端已经支持跨域
-            // proxy: {
-            //   ['/admin-api']: {
-            //     target: env.VITE_BASE_URL,
-            //     ws: false,
-            //     changeOrigin: true,
-            //     rewrite: (path) => path.replace(new RegExp(`^/admin-api`), ''),
-            //   },
-            // },
+            proxy: {
+              [env.VITE_API_URL]: {
+                target: env.VITE_PROXY_URL,
+                ws: false,
+                changeOrigin: true
+              },
+            },
         },
         // 项目使用的vite插件。 单独提取到build/vite/plugin中管理
         plugins: createVitePlugins(),
