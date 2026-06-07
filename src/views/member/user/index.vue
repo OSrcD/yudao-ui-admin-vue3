@@ -135,7 +135,7 @@
         <template #default="scope">
           <div class="flex items-center justify-center">
             <el-button link type="primary" @click="openDetail(scope.row.id)">详情</el-button>
-            <el-dropdown
+              <el-dropdown
               v-hasPermi="[
                 'member:user:update',
                 'member:user:update-level',
@@ -173,6 +173,11 @@
                     command="handleUpdateBlance"
                   >
                     修改余额
+                  </el-dropdown-item>
+                  <el-dropdown-item
+                    command="handleResetPwd"
+                  >
+                    修改密码
                   </el-dropdown-item>
                 </el-dropdown-menu>
               </template>
@@ -218,6 +223,7 @@ import { checkPermi } from '@/utils/permission'
 defineOptions({ name: 'MemberUser' })
 
 const message = useMessage() // 消息弹窗
+const { t } = useI18n() // 国际化
 
 const loading = ref(true) // 列表的加载中
 const total = ref(0) // 列表的总页数
@@ -305,9 +311,27 @@ const handleCommand = (command: string, row: UserApi.UserVO) => {
     case 'handleUpdateBlance':
       UpdateBalanceFormRef.value.open(row.id)
       break
+    case 'handleResetPwd':
+      handleResetPwd(row)
+      break
     default:
       break
   }
+}
+
+/** 重置密码 */
+const handleResetPwd = async (row: UserApi.UserVO) => {
+  try {
+    // 重置的二次确认
+    const result = await message.prompt(
+      '请输入"' + row.nickname + '"的新密码',
+      t('common.reminder')
+    )
+    const password = result.value
+    // 发起重置
+    await UserApi.updateUserPassword({ id: row.id, password })
+    message.success('修改成功，新密码是：' + password)
+  } catch {}
 }
 
 /** 初始化 **/
