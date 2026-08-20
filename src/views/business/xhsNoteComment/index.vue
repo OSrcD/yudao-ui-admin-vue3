@@ -118,6 +118,15 @@
         </template>
       </el-table-column>
 
+      <el-table-column label="创建时间" align="center" prop="createTime" width="180" sortable="custom">
+        <template #default="scope">
+          <div class="font-medium text-gray-800">{{ formatCreateTime(scope.row.createTime) }}</div>
+          <div class="text-xs text-gray-400 font-normal" v-if="scope.row.createTime && formatRelativeTime(scope.row.createTime)">
+            ({{ formatRelativeTime(scope.row.createTime) }})
+          </div>
+        </template>
+      </el-table-column>
+
       <el-table-column label="关联笔记" align="left" min-width="280">
         <template #default="scope">
           <div class="text-sm font-medium text-gray-800 line-clamp-2 mb-1" :title="scope.row.noteTitle || '未知笔记'">
@@ -246,6 +255,7 @@ import {
   XhsNoteCommentPageReqVO
 } from '@/api/business/xhsNoteComment'
 import { updateNoteMonitorStatus } from '@/api/business/xhsNoteCollect'
+import { formatDate } from '@/utils/formatTime'
 
 defineOptions({ name: 'XhsNoteComment' })
 
@@ -272,11 +282,6 @@ const queryParams = reactive<XhsNoteCommentPageReqVO>({
 
 const queryFormRef = ref()
 
-// 多列组合排序缓存表
-const activeSortsMap = reactive<Record<string, 'asc' | 'desc'>>({
-  commentTime: 'desc'
-})
-
 const getList = async () => {
   loading.value = true
   try {
@@ -288,31 +293,48 @@ const getList = async () => {
   }
 }
 
+/** 解析时间：支持毫秒时间戳 / Date / 日期字符串 */
+const parseToDate = (val?: string | number | Date) => {
+  if (val === undefined || val === null || val === '') return null
+  if (val instanceof Date) return isNaN(val.getTime()) ? null : val
+  const raw = String(val).trim()
+  if (/^\d{13}$/.test(raw)) return new Date(Number(raw))
+  if (/^\d{10}$/.test(raw)) return new Date(Number(raw) * 1000)
+  const d = new Date(raw.replace(/-/g, '/').replace('T', ' '))
+  return isNaN(d.getTime()) ? null : d
+}
+
+/** 入库创建时间展示 */
+const formatCreateTime = (val?: string | number | Date) => {
+  const d = parseToDate(val)
+  if (!d) return val ? String(val) : '-'
+  return formatDate(d) || '-'
+}
+
 /** 计算距离现在的相对时间 (如: 3分钟前、2小时前、1天前、1个月前) */
-const formatRelativeTime = (timeStr?: string) => {
-  if (!timeStr) return ''
+const formatRelativeTime = (val?: string | number | Date) => {
+  const pubDate = parseToDate(val)
+  if (!pubDate) return ''
   try {
-    const pubDate = new Date(timeStr.replace(/-/g, '/'))
-    if (isNaN(pubDate.getTime())) return ''
     const now = new Date()
     const diffMs = now.getTime() - pubDate.getTime()
     if (diffMs < 0) return '刚刚'
-    
+
     const seconds = Math.floor(diffMs / 1000)
     if (seconds < 60) return '刚刚'
-    
+
     const minutes = Math.floor(seconds / 60)
     if (minutes < 60) return `${minutes}分钟前`
-    
+
     const hours = Math.floor(minutes / 60)
     if (hours < 24) return `${hours}小时前`
-    
+
     const days = Math.floor(hours / 24)
     if (days < 30) return `${days}天前`
-    
+
     const months = Math.floor(days / 30)
     if (months < 12) return `${months}个月前`
-    
+
     const years = Math.floor(months / 12)
     return `${years}年前`
   } catch (e) {
@@ -342,7 +364,6 @@ const handleToggleMonitor = async (row: XhsNoteCommentVO) => {
 }
 
 const resetQuery = () => {
-  activeSortsMap['commentTime'] = 'desc'
   queryParams.sortFields = 'commentTime:desc'
   queryFormRef.value?.resetFields()
   handleQuery()
@@ -379,24 +400,15 @@ const fallbackCopy = (val: string, name: string) => {
   document.body.removeChild(textArea)
 }
 
-/** 排序变更 */
-const handleSortChange = ({ prop, order }: { prop: string; order: string }) => {
+/** 排序变更：单列互斥（点创建时间时清掉默认的评论时间排序） */
+const handleSortChange = ({ prop, order }: { prop: string; order: string | null }) => {
   if (order === 'ascending') {
-    activeSortsMap[prop] = 'asc'
+    queryParams.sortFields = `${prop}:asc`
   } else if (order === 'descending') {
-    activeSortsMap[prop] = 'desc'
+    queryParams.sortFields = `${prop}:desc`
   } else {
-    delete activeSortsMap[prop]
+    queryParams.sortFields = 'commentTime:desc'
   }
-
-  const sortList: string[] = []
-  for (const key in activeSortsMap) {
-    if (activeSortsMap[key]) {
-      sortList.push(`${key}:${activeSortsMap[key]}`)
-    }
-  }
-
-  queryParams.sortFields = sortList.length > 0 ? sortList.join(',') : undefined
   handleQuery()
 }
 

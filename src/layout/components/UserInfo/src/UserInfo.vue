@@ -68,10 +68,12 @@ const toDocument = () => {
           <Icon icon="ep:tools" />
           <div @click="toProfile">{{ t('common.profile') }}</div>
         </ElDropdownItem>
+        <!-- 隐藏项目文档入口
         <ElDropdownItem>
           <Icon icon="ep:menu" />
           <div @click="toDocument">{{ t('common.document') }}</div>
         </ElDropdownItem>
+        -->
         <ElDropdownItem divided>
           <Icon icon="ep:lock" />
           <div @click="lockScreen">{{ t('lock.lockScreen') }}</div>

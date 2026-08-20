@@ -58,6 +58,7 @@
 
   <el-row class="mt-8px" :gutter="8" justify="space-between">
     <el-col :xl="16" :lg="16" :md="24" :sm="24" :xs="24" class="mb-8px">
+      <!-- 隐藏首页「项目数」开源项目展示
       <el-card shadow="never">
         <template #header>
           <div class="h-3 flex justify-between">
@@ -107,8 +108,9 @@
           </el-row>
         </el-skeleton>
       </el-card>
+      -->
 
-      <el-card shadow="never" class="mt-8px">
+      <el-card shadow="never">
         <el-skeleton :loading="loading" animated>
           <el-row :gutter="20" justify="space-between">
             <el-col :xl="10" :lg="10" :md="24" :sm="24" :xs="24">

@@ -129,6 +129,7 @@
           </div>
         </el-form-item>
       </el-col>
+      <!-- 隐藏萌新必读
       <el-divider content-position="center">萌新必读</el-divider>
       <el-col :span="24" class="px-10px">
         <el-form-item>
@@ -144,6 +145,7 @@
           </div>
         </el-form-item>
       </el-col>
+      -->
     </el-row>
   </el-form>
 </template>

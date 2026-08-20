@@ -106,6 +106,16 @@
         </template>
       </el-table-column>
       <el-table-column align="center" label="积分" prop="point" width="100px" />
+      <el-table-column align="center" label="VIP" width="160px">
+        <template #default="scope">
+          <el-tag :type="scope.row.vipActive ? 'success' : 'info'" size="small">
+            {{ scope.row.vipActive ? '有效' : '无/过期' }}
+          </el-tag>
+          <div v-if="scope.row.vipExpireTime" class="text-12px text-gray-400 mt-2px">
+            {{ String(scope.row.vipExpireTime).replace('T', ' ').slice(0, 16) }}
+          </div>
+        </template>
+      </el-table-column>
       <el-table-column align="center" label="状态" prop="status" width="100px">
         <template #default="scope">
           <dict-tag :type="DICT_TYPE.COMMON_STATUS" :value="scope.row.status" />
@@ -140,6 +150,7 @@
                 'member:user:update',
                 'member:user:update-level',
                 'member:user:update-point',
+                'member:user:update-vip',
                 'pay:wallet:update-balance'
               ]"
               @command="(command) => handleCommand(command, scope.row)"
@@ -167,6 +178,12 @@
                     command="handleUpdatePoint"
                   >
                     修改积分
+                  </el-dropdown-item>
+                  <el-dropdown-item
+                    v-if="checkPermi(['member:user:update-vip'])"
+                    command="handleUpdateVip"
+                  >
+                    修改 VIP
                   </el-dropdown-item>
                   <el-dropdown-item
                     v-if="checkPermi(['pay:wallet:update-balance'])"
@@ -201,6 +218,8 @@
   <UserLevelUpdateForm ref="updateLevelFormRef" @success="getList" />
   <!-- 修改用户积分弹窗 -->
   <UserPointUpdateForm ref="updatePointFormRef" @success="getList" />
+  <!-- 修改用户 VIP 弹窗 -->
+  <UserVipUpdateForm ref="updateVipFormRef" @success="getList" />
   <!-- 修改用户余额弹窗 -->
   <UserBalanceUpdateForm ref="UpdateBalanceFormRef" @success="getList" />
   <!-- 发送优惠券弹窗 -->
@@ -216,6 +235,7 @@ import MemberLevelSelect from '@/views/member/level/components/MemberLevelSelect
 import MemberGroupSelect from '@/views/member/group/components/MemberGroupSelect.vue'
 import UserLevelUpdateForm from './components/UserLevelUpdateForm.vue'
 import UserPointUpdateForm from './components/UserPointUpdateForm.vue'
+import UserVipUpdateForm from './components/UserVipUpdateForm.vue'
 import UserBalanceUpdateForm from './components/UserBalanceUpdateForm.vue'
 import { CouponSendForm } from '@/views/mall/promotion/coupon/components'
 import { checkPermi } from '@/utils/permission'
@@ -242,6 +262,7 @@ const queryParams = reactive({
 const queryFormRef = ref() // 搜索的表单
 const updateLevelFormRef = ref() // 修改会员等级表单
 const updatePointFormRef = ref() // 修改会员积分表单
+const updateVipFormRef = ref() // 修改会员 VIP 表单
 const UpdateBalanceFormRef = ref() // 修改用户余额表单
 const selectedIds = ref<number[]>([]) // 表格的选中 ID 数组
 
@@ -307,6 +328,9 @@ const handleCommand = (command: string, row: UserApi.UserVO) => {
       break
     case 'handleUpdatePoint':
       updatePointFormRef.value.open(row.id)
+      break
+    case 'handleUpdateVip':
+      updateVipFormRef.value.open(row.id)
       break
     case 'handleUpdateBlance':
       UpdateBalanceFormRef.value.open(row.id)

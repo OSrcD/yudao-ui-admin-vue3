@@ -68,7 +68,8 @@
                     text-overflow: ellipsis;
                   "
                 >
-                  {{ conversation.title }}
+                  {{ conversation.title
+                  }}{{ conversation.userType === 2 ? ' ·App' : '' }}
                 </span>
               </div>
               <div

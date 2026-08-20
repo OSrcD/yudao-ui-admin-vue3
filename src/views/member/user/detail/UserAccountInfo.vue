@@ -26,6 +26,24 @@
     </el-descriptions-item>
     <el-descriptions-item>
       <template #label>
+        <descriptions-item-label icon="ep:medal" label=" VIP状态 " />
+      </template>
+      <el-tag :type="user.vipActive ? 'success' : 'info'" size="small">
+        {{ user.vipActive ? '有效' : '无/过期' }}
+      </el-tag>
+    </el-descriptions-item>
+    <el-descriptions-item>
+      <template #label>
+        <descriptions-item-label icon="ep:clock" label=" VIP到期 " />
+      </template>
+      {{
+        user.vipExpireTime
+          ? String(user.vipExpireTime).replace('T', ' ').slice(0, 19)
+          : '无'
+      }}
+    </el-descriptions-item>
+    <el-descriptions-item>
+      <template #label>
         <descriptions-item-label icon="svg-icon:member_balance" label=" 当前余额 " />
       </template>
       {{ fenToYuan(wallet.balance || 0) }}

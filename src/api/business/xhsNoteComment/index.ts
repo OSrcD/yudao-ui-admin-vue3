@@ -20,7 +20,7 @@ export interface XhsNoteCommentVO {
   interceptStatus?: number
   remark?: string
   rawJson?: string
-  createTime?: Date
+  createTime?: string | number | Date
   noteTitle?: string
   noteDesc?: string
   notePublishTime?: string

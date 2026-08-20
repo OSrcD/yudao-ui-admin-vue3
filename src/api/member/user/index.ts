@@ -20,6 +20,9 @@ export interface UserVO {
   point: number | undefined | null
   totalPoint: number | undefined | null
   experience: number | null | undefined
+  vipExpireTime?: string | null
+  vipTrialUsed?: boolean | null
+  vipActive?: boolean | null
 }
 
 // 查询会员用户列表
@@ -50,4 +53,9 @@ export const updateUserPoint = async (data: any) => {
 // 修改会员用户密码
 export const updateUserPassword = async (data: any) => {
   return await request.put({ url: `/member/user/update-password`, data })
+}
+
+// 修改会员用户 VIP
+export const updateUserVip = async (data: any) => {
+  return await request.put({ url: `/member/user/update-vip`, data })
 }
