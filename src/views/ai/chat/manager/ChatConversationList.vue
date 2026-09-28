@@ -55,9 +55,20 @@
     <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true">
       <el-table-column label="对话编号" align="center" prop="id" width="180" fixed="left" />
       <el-table-column label="对话标题" align="center" prop="title" width="180" fixed="left" />
-      <el-table-column label="用户" align="center" prop="userId" width="180">
+      <el-table-column label="用户" align="center" width="200">
         <template #default="scope">
-          <span>{{ userList.find((item) => item.id === scope.row.userId)?.nickname }}</span>
+          <div class="flex items-center justify-center gap-1">
+            <el-tag size="small" :type="scope.row.userType === 2 ? 'warning' : 'info'" effect="plain">
+              {{ scope.row.userType === 2 ? 'App' : '管理' }}
+            </el-tag>
+            <span>
+              {{
+                scope.row.userNickname
+                  ? (scope.row.userMobile ? `${scope.row.userNickname} (${scope.row.userMobile})` : scope.row.userNickname)
+                  : (scope.row.userName || scope.row.userMobile || userList.find((item) => item.id === scope.row.userId)?.nickname || ('#' + scope.row.userId))
+              }}
+            </span>
+          </div>
         </template>
       </el-table-column>
       <el-table-column label="角色" align="center" prop="roleName" width="180" />

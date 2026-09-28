@@ -20,6 +20,10 @@ export interface ChatConversationVO {
   roleAvatar?: string // 角色头像
   modelMaxTokens?: string // 模型的单条回复的最大 Token 数量
   modelMaxContexts?: string // 模型的上下文的最大 Message 数量
+  messageCount?: number // 消息条数
+  userName?: string // 用户账号/用户名
+  userNickname?: string // 用户昵称
+  userMobile?: string // 用户手机号
 }
 
 // AI 聊天对话 API

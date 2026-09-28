@@ -10,6 +10,8 @@ export interface ModelVO {
   type: number // 模型类型
   sort: number // 排序
   status: number // 状态
+  clientType?: string // 适用终端：ALL 全部 / APP 移动端 / PC 网页端
+  isDefault?: boolean // 是否默认模型
   temperature?: number // 温度参数
   maxTokens?: number // 单条回复的最大 Token 数量
   maxContexts?: number // 上下文的最大 Message 数量
@@ -20,6 +22,11 @@ export const ModelApi = {
   // 查询模型分页
   getModelPage: async (params: any) => {
     return await request.get({ url: `/ai/model/page`, params })
+  },
+
+  // 设为默认模型
+  setDefaultModel: async (id: number) => {
+    return await request.put({ url: `/ai/model/set-default?id=` + id })
   },
 
   // 获得模型列表

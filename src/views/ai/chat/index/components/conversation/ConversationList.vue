@@ -1,7 +1,7 @@
 <!--  AI 对话  -->
 <template>
   <el-aside
-    width="260px"
+    width="280px"
     class="h-100% relative flex flex-col justify-between px-2.5 pt-2.5 pb-0 overflow-hidden"
   >
     <!-- 左顶部：对话 -->
@@ -16,7 +16,7 @@
         v-model="searchName"
         size="large"
         class="mt-5"
-        placeholder="搜索历史记录"
+        placeholder="搜索对话 / 账号 / 手机号"
         @keyup="searchConversation"
       >
         <template #prefix>
@@ -44,49 +44,69 @@
             @mouseout="hoverConversationId = ''"
           >
             <div
-              class="flex flex-row justify-between flex-1 px-1.25 cursor-pointer rounded-1.25 items-center leading-7.5"
+              class="flex flex-row justify-between flex-1 p-1.5 cursor-pointer rounded-1.25 items-center"
               :style="
                 conversation.id === activeConversationId
                   ? 'background-color: var(--el-color-primary-light-9); border: 1px solid var(--el-color-primary-light-7);'
-                  : ''
+                  : 'border: 1px solid transparent;'
               "
             >
-              <div class="flex flex-row items-center">
+              <div class="flex flex-row items-center flex-1 min-w-0 mr-1">
                 <img
-                  class="w-6.25 h-6.25 rounded-1.25 flex flex-row justify-center"
+                  class="w-7 h-7 rounded-1.25 flex-shrink-0"
                   :src="conversation.roleAvatar || roleAvatarDefaultImg"
                 />
-                <span
-                  class="py-0.5 px-2.5"
-                  style="
-                    max-width: 220px;
-                    font-size: 14px;
-                    font-weight: 400;
-                    color: var(--el-text-color-regular);
-                    overflow: hidden;
-                    white-space: nowrap;
-                    text-overflow: ellipsis;
-                  "
-                >
-                  {{ conversation.title
-                  }}{{ conversation.userType === 2 ? ' ·App' : '' }}
-                </span>
+                <div class="flex flex-col ml-2 min-w-0 flex-1">
+                  <!-- 第一行：标题 + 消息数 -->
+                  <div class="flex items-center justify-between">
+                    <span
+                      class="text-13px font-medium text-[var(--el-text-color-primary)] truncate"
+                      :title="conversation.title"
+                    >
+                      {{ conversation.title }}
+                    </span>
+                    <el-tag
+                      v-if="conversation.messageCount !== undefined && conversation.messageCount !== null"
+                      size="small"
+                      type="info"
+                      effect="light"
+                      class="ml-1 scale-90 origin-right flex-shrink-0"
+                    >
+                      {{ conversation.messageCount }}条
+                    </el-tag>
+                  </div>
+                  <!-- 第二行：所属账号信息 -->
+                  <div class="flex items-center text-11px text-[var(--el-text-color-secondary)] mt-0.5 truncate">
+                    <el-tag
+                      size="small"
+                      :type="conversation.userType === 2 ? 'warning' : 'info'"
+                      effect="plain"
+                      class="mr-1 scale-85 origin-left flex-shrink-0"
+                      style="padding: 0 4px; height: 18px; line-height: 16px;"
+                    >
+                      {{ conversation.userType === 2 ? 'App' : '管理' }}
+                    </el-tag>
+                    <span class="truncate" :title="getAccountDisplay(conversation)">
+                      {{ getAccountDisplay(conversation) }}
+                    </span>
+                  </div>
+                </div>
               </div>
               <div
-                class="right-0.5 flex flex-row justify-center"
+                class="right-0.5 flex flex-row justify-center flex-shrink-0"
                 style="color: var(--el-text-color-regular)"
                 v-show="hoverConversationId === conversation.id"
               >
-                <el-button class="m-0" link @click.stop="handleTop(conversation)">
+                <el-button class="m-0 !p-1" link @click.stop="handleTop(conversation)">
                   <el-icon title="置顶" v-if="!conversation.pinned"><Top /></el-icon>
                   <el-icon title="置顶" v-if="conversation.pinned"><Bottom /></el-icon>
                 </el-button>
-                <el-button class="m-0" link @click.stop="updateConversationTitle(conversation)">
+                <el-button class="m-0 !p-1" link @click.stop="updateConversationTitle(conversation)">
                   <el-icon title="编辑">
                     <Icon icon="ep:edit" />
                   </el-icon>
                 </el-button>
-                <el-button class="m-0" link @click.stop="deleteChatConversation(conversation)">
+                <el-button class="m-0 !p-1" link @click.stop="deleteChatConversation(conversation)">
                   <el-icon title="删除对话">
                     <Icon icon="ep:delete" />
                   </el-icon>
@@ -167,15 +187,40 @@ const emits = defineEmits([
   'onConversationDelete'
 ])
 
+/** 获取账号显示名称 */
+const getAccountDisplay = (conversation: ChatConversationVO) => {
+  if (conversation.userNickname) {
+    if (conversation.userMobile) {
+      return `${conversation.userNickname} (${conversation.userMobile})`
+    }
+    return conversation.userNickname
+  }
+  if (conversation.userName) {
+    return conversation.userName
+  }
+  if (conversation.userMobile) {
+    return conversation.userMobile
+  }
+  if (conversation.userId) {
+    return `用户#${conversation.userId}`
+  }
+  return '默认用户'
+}
+
 /** 搜索对话 */
-const searchConversation = async (e) => {
+const searchConversation = async (_e?: any) => {
   // 恢复数据
-  if (!searchName.value.trim().length) {
+  const keyword = searchName.value.trim().toLowerCase()
+  if (!keyword.length) {
     conversationMap.value = await getConversationGroupByCreateTime(conversationList.value)
   } else {
-    // 过滤
+    // 过滤：支持标题、账号昵称、用户名、手机号搜索
     const filterValues = conversationList.value.filter((item) => {
-      return item.title.includes(searchName.value.trim())
+      const matchTitle = item.title && item.title.toLowerCase().includes(keyword)
+      const matchNickname = item.userNickname && item.userNickname.toLowerCase().includes(keyword)
+      const matchUserName = item.userName && item.userName.toLowerCase().includes(keyword)
+      const matchMobile = item.userMobile && item.userMobile.includes(keyword)
+      return matchTitle || matchNickname || matchUserName || matchMobile
     })
     conversationMap.value = await getConversationGroupByCreateTime(filterValues)
   }

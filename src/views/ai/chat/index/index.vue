@@ -14,9 +14,24 @@
       <el-header
         class="flex flex-row items-center justify-between bg-[var(--el-bg-color-page)] shadow-[0_0_0_0_var(--el-border-color-light)]"
       >
-        <div class="text-18px font-bold">
-          {{ activeConversation?.title ? activeConversation?.title : '对话' }}
-          <span v-if="activeMessageList.length">({{ activeMessageList.length }})</span>
+        <div class="text-18px font-bold flex items-center gap-2">
+          <span>{{ activeConversation?.title ? activeConversation?.title : '对话' }}</span>
+          <span v-if="activeMessageList.length" class="text-14px font-normal text-[var(--el-text-color-secondary)]">
+            ({{ activeMessageList.length }})
+          </span>
+          <el-tag
+            v-if="activeConversation && (activeConversation.userNickname || activeConversation.userName || activeConversation.userMobile || activeConversation.userId)"
+            size="small"
+            :type="activeConversation.userType === 2 ? 'warning' : 'info'"
+            effect="plain"
+          >
+            {{ activeConversation.userType === 2 ? 'App会员' : '管理员' }}:
+            {{
+              activeConversation.userNickname
+                ? (activeConversation.userMobile ? `${activeConversation.userNickname} (${activeConversation.userMobile})` : activeConversation.userNickname)
+                : (activeConversation.userName || activeConversation.userMobile || ('#' + activeConversation.userId))
+            }}
+          </el-tag>
         </div>
         <div class="flex w-300px flex-row justify-end" v-if="activeConversation">
           <el-button type="primary" bg plain size="small" @click="openChatConversationUpdateForm">

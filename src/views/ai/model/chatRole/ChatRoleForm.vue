@@ -82,6 +82,21 @@
           </el-radio>
         </el-radio-group>
       </el-form-item>
+      <el-form-item label="适用终端" prop="clientType" v-if="!isUser">
+        <el-radio-group v-model="formData.clientType">
+          <el-radio value="APP">APP端</el-radio>
+          <el-radio value="PC">PC端</el-radio>
+          <el-radio value="ALL">全部通用</el-radio>
+        </el-radio-group>
+      </el-form-item>
+      <el-form-item label="直连Key" prop="customApiKey">
+        <el-input
+          v-model="formData.customApiKey"
+          placeholder="可选，用户或角色自备的大模型 API Key（留空则走全局配置）"
+          show-password
+          clearable
+        />
+      </el-form-item>
     </el-form>
     <template #footer>
       <el-button @click="submitForm" type="primary" :disabled="formLoading">确 定</el-button>
@@ -120,6 +135,8 @@ const formData = ref({
   systemMessage: undefined,
   publicStatus: true,
   status: CommonStatusEnum.ENABLE,
+  clientType: 'APP',
+  customApiKey: undefined as string | undefined,
   knowledgeIds: [] as number[],
   toolIds: [] as number[],
   mcpClientNames: [] as string[]
@@ -141,7 +158,8 @@ const formRules = reactive<FormRules>({
   sort: [{ required: true, message: '角色排序不能为空', trigger: 'blur' }],
   description: [{ required: true, message: '角色描述不能为空', trigger: 'blur' }],
   systemMessage: [{ required: true, message: '角色设定不能为空', trigger: 'blur' }],
-  publicStatus: [{ required: true, message: '是否公开不能为空', trigger: 'blur' }]
+  publicStatus: [{ required: true, message: '是否公开不能为空', trigger: 'blur' }],
+  clientType: [{ required: true, message: '适用终端不能为空', trigger: 'change' }]
 })
 
 /** 打开弹窗 */
@@ -156,6 +174,9 @@ const open = async (type: string, id?: number, title?: string) => {
     formLoading.value = true
     try {
       formData.value = await ChatRoleApi.getChatRole(id)
+      if (!formData.value.clientType) {
+        formData.value.clientType = formData.value.category === 'APP截流' ? 'APP' : 'PC'
+      }
     } finally {
       formLoading.value = false
     }
@@ -214,6 +235,8 @@ const resetForm = () => {
     systemMessage: undefined,
     publicStatus: true,
     status: CommonStatusEnum.ENABLE,
+    clientType: 'APP',
+    customApiKey: undefined,
     knowledgeIds: [],
     toolIds: [],
     mcpClientNames: []

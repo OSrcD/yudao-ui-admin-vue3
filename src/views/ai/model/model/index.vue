@@ -37,6 +37,18 @@
           class="!w-240px"
         />
       </el-form-item>
+      <el-form-item label="适用终端" prop="clientType">
+        <el-select
+          v-model="queryParams.clientType"
+          placeholder="请选择适用终端"
+          clearable
+          class="!w-240px"
+        >
+          <el-option label="全部通用" value="ALL" />
+          <el-option label="APP端" value="APP" />
+          <el-option label="PC端" value="PC" />
+        </el-select>
+      </el-form-item>
       <el-form-item>
         <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
         <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
@@ -65,7 +77,12 @@
           <dict-tag :type="DICT_TYPE.AI_MODEL_TYPE" :value="scope.row.type" />
         </template>
       </el-table-column>
-      <el-table-column label="模型名字" align="center" prop="name" min-width="180" />
+      <el-table-column label="模型名字" align="center" prop="name" min-width="180">
+        <template #default="scope">
+          <span>{{ scope.row.name }}</span>
+          <el-tag v-if="scope.row.isDefault" type="danger" size="small" class="ml-5px">默认</el-tag>
+        </template>
+      </el-table-column>
       <el-table-column label="模型标识" align="center" prop="model" min-width="180" />
       <el-table-column label="API 秘钥" align="center" prop="keyId" min-width="140">
         <template #default="scope">
@@ -78,11 +95,27 @@
           <dict-tag :type="DICT_TYPE.COMMON_STATUS" :value="scope.row.status" />
         </template>
       </el-table-column>
+      <el-table-column label="适用终端" align="center" prop="clientType" min-width="100">
+        <template #default="scope">
+          <el-tag v-if="scope.row.clientType === 'APP'" type="success">APP端</el-tag>
+          <el-tag v-else-if="scope.row.clientType === 'PC'" type="info">PC端</el-tag>
+          <el-tag v-else type="primary">全部通用</el-tag>
+        </template>
+      </el-table-column>
       <el-table-column label="温度参数" align="center" prop="temperature" min-width="80" />
       <el-table-column label="回复数 Token 数" align="center" prop="maxTokens" min-width="140" />
       <el-table-column label="上下文数量" align="center" prop="maxContexts" min-width="100" />
-      <el-table-column label="操作" align="center" width="180" fixed="right">
+      <el-table-column label="操作" align="center" width="220" fixed="right">
         <template #default="scope">
+          <el-button
+            v-if="!scope.row.isDefault"
+            link
+            type="success"
+            @click="handleSetDefault(scope.row)"
+            v-hasPermi="['ai:model:update']"
+          >
+            设为默认
+          </el-button>
           <el-button
             link
             type="primary"
@@ -135,7 +168,8 @@ const queryParams = reactive({
   pageSize: 10,
   name: undefined,
   model: undefined,
-  platform: undefined
+  platform: undefined,
+  clientType: undefined
 })
 const queryFormRef = ref() // 搜索的表单
 const apiKeyList = ref([] as ApiKeyVO[]) // API 密钥列表
@@ -179,6 +213,16 @@ const handleDelete = async (id: number) => {
     await ModelApi.deleteModel(id)
     message.success(t('common.delSuccess'))
     // 刷新列表
+    await getList()
+  } catch {}
+}
+
+/** 设为默认操作 */
+const handleSetDefault = async (row: ModelVO) => {
+  try {
+    await message.confirm(`确认要将模型「${row.name}」设置为默认模型吗？`)
+    await ModelApi.setDefaultModel(row.id)
+    message.success('设置默认模型成功')
     await getList()
   } catch {}
 }

@@ -106,6 +106,7 @@
         </template>
       </el-table-column>
       <el-table-column align="center" label="积分" prop="point" width="100px" />
+      <el-table-column align="center" label="AI发送上限" prop="aiChatMaxCount" width="100px" />
       <el-table-column align="center" label="VIP" width="160px">
         <template #default="scope">
           <el-tag :type="scope.row.vipActive ? 'success' : 'info'" size="small">

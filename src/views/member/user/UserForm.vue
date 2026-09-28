@@ -63,6 +63,9 @@
       <el-form-item label="用户分组" prop="groupId">
         <MemberGroupSelect v-model="formData.groupId" />
       </el-form-item>
+      <el-form-item label="AI发送上限" prop="aiChatMaxCount">
+        <el-input-number v-model="formData.aiChatMaxCount" :min="0" placeholder="请输入AI最大发送次数" />
+      </el-form-item>
       <el-form-item label="会员备注" prop="mark">
         <el-input type="textarea" v-model="formData.mark" placeholder="请输入会员备注" />
       </el-form-item>
@@ -101,7 +104,8 @@ const formData = ref({
   birthday: undefined,
   mark: undefined,
   tagIds: [],
-  groupId: undefined
+  groupId: undefined,
+  aiChatMaxCount: undefined
 })
 const formRules = reactive({
   mobile: [{ required: true, message: '手机号不能为空', trigger: 'blur' }],

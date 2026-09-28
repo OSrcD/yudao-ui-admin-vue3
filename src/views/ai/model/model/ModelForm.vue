@@ -62,6 +62,16 @@
           </el-radio>
         </el-radio-group>
       </el-form-item>
+      <el-form-item label="适用终端" prop="clientType">
+        <el-radio-group v-model="formData.clientType">
+          <el-radio value="ALL">全部通用</el-radio>
+          <el-radio value="APP">APP端</el-radio>
+          <el-radio value="PC">PC端</el-radio>
+        </el-radio-group>
+      </el-form-item>
+      <el-form-item label="设为默认" prop="isDefault">
+        <el-switch v-model="formData.isDefault" active-text="默认模型" inactive-text="普通模型" />
+      </el-form-item>
       <el-form-item
         label="温度参数"
         prop="temperature"
@@ -135,6 +145,8 @@ const formData = ref({
   type: undefined,
   sort: undefined,
   status: CommonStatusEnum.ENABLE,
+  clientType: 'ALL',
+  isDefault: false,
   temperature: undefined,
   maxTokens: undefined,
   maxContexts: undefined
@@ -147,6 +159,7 @@ const formRules = reactive({
   type: [{ required: true, message: '模型类型不能为空', trigger: 'blur' }],
   sort: [{ required: true, message: '排序不能为空', trigger: 'blur' }],
   status: [{ required: true, message: '状态不能为空', trigger: 'blur' }],
+  clientType: [{ required: true, message: '适用终端不能为空', trigger: 'change' }],
   temperature: [{ required: true, message: '温度参数不能为空', trigger: 'blur' }],
   maxTokens: [{ required: true, message: '回复数 Token 数不能为空', trigger: 'blur' }],
   maxContexts: [{ required: true, message: '上下文数量不能为空', trigger: 'blur' }]
@@ -165,6 +178,9 @@ const open = async (type: string, id?: number) => {
     formLoading.value = true
     try {
       formData.value = await ModelApi.getModel(id)
+      if (!formData.value.clientType) {
+        formData.value.clientType = 'ALL'
+      }
     } finally {
       formLoading.value = false
     }
@@ -214,6 +230,8 @@ const resetForm = () => {
     type: undefined,
     sort: undefined,
     status: CommonStatusEnum.ENABLE,
+    clientType: 'ALL',
+    isDefault: false,
     temperature: undefined,
     maxTokens: undefined,
     maxContexts: undefined

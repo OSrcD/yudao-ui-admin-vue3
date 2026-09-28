@@ -13,18 +13,21 @@ export interface ChatRoleVO {
   welcomeMessage: string // 角色设定
   publicStatus: boolean // 是否公开
   status: number // 状态
+  clientType?: string // 适用终端：ALL 全部 / APP 移动端 / PC 网页端
   knowledgeIds?: number[] // 引用的知识库 ID 列表
   toolIds?: number[] // 引用的工具 ID 列表
   mcpClientNames?: string[] // 引用的 MCP Client 名字列表
+  customApiKey?: string // 自定义 API Key（直连大模型密钥）
 }
 
 // AI 聊天角色 分页请求 vo
 export interface ChatRolePageReqVO {
   name?: string // 角色名称
   category?: string // 角色类别
-  publicStatus: boolean // 是否公开
-  pageNo: number // 是否公开
-  pageSize: number // 是否公开
+  publicStatus?: boolean // 是否公开
+  clientType?: string // 适用终端
+  pageNo: number // 页码
+  pageSize: number // 每页大小
 }
 
 // AI 聊天角色 API

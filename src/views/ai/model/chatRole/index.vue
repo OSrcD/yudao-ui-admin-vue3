@@ -43,6 +43,18 @@
           />
         </el-select>
       </el-form-item>
+      <el-form-item label="适用终端" prop="clientType">
+        <el-select
+          v-model="queryParams.clientType"
+          placeholder="请选择适用终端"
+          clearable
+          class="!w-240px"
+        >
+          <el-option label="APP端" value="APP" />
+          <el-option label="PC端" value="PC" />
+          <el-option label="全部通用" value="ALL" />
+        </el-select>
+      </el-form-item>
       <el-form-item>
         <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
         <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
@@ -83,14 +95,28 @@
           <span v-else>引用 {{ scope.row.toolIds.length }} 个</span>
         </template>
       </el-table-column>
-      <el-table-column label="是否公开" align="center" prop="publicStatus">
+      <el-table-column label="是否公开" align="center" prop="publicStatus" width="90">
         <template #default="scope">
-          <dict-tag :type="DICT_TYPE.INFRA_BOOLEAN_STRING" :value="scope.row.publicStatus" />
+          <el-tag v-if="scope.row.publicStatus" type="primary" size="small">公开</el-tag>
+          <el-tag v-else type="info" size="small">私有</el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column label="直连Key" align="center" prop="customApiKey" width="100">
+        <template #default="scope">
+          <el-tag v-if="scope.row.customApiKey" type="warning" size="small">已配置Key</el-tag>
+          <span v-else class="text-gray-400">-</span>
         </template>
       </el-table-column>
       <el-table-column label="状态" align="center" prop="status">
         <template #default="scope">
           <dict-tag :type="DICT_TYPE.COMMON_STATUS" :value="scope.row.status" />
+        </template>
+      </el-table-column>
+      <el-table-column label="适用终端" align="center" prop="clientType">
+        <template #default="scope">
+          <el-tag v-if="scope.row.clientType === 'APP'" type="success">APP端</el-tag>
+          <el-tag v-else-if="scope.row.clientType === 'PC'" type="info">PC端</el-tag>
+          <el-tag v-else type="primary">全部通用</el-tag>
         </template>
       </el-table-column>
       <el-table-column label="角色排序" align="center" prop="sort" />
@@ -147,7 +173,8 @@ const queryParams = reactive({
   pageSize: 10,
   name: undefined,
   category: undefined,
-  publicStatus: true
+  publicStatus: undefined,
+  clientType: undefined
 })
 const queryFormRef = ref() // 搜索的表单
 
