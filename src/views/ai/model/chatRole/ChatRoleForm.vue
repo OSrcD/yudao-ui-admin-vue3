@@ -32,6 +32,14 @@
       <el-form-item label="角色设定" prop="systemMessage">
         <el-input type="textarea" v-model="formData.systemMessage" placeholder="请输入角色设定" />
       </el-form-item>
+      <el-form-item label="用户提示词" prop="userMessage">
+        <el-input
+          type="textarea"
+          :rows="3"
+          v-model="formData.userMessage"
+          placeholder="请输入用户提示词设定模版，可包含 {{ocr_content}} 占位符"
+        />
+      </el-form-item>
       <el-form-item label="引用知识库" prop="knowledgeIds">
         <el-select v-model="formData.knowledgeIds" placeholder="请选择知识库" clearable multiple>
           <el-option
@@ -133,6 +141,7 @@ const formData = ref({
   sort: undefined,
   description: undefined,
   systemMessage: undefined,
+  userMessage: undefined as string | undefined,
   publicStatus: true,
   status: CommonStatusEnum.ENABLE,
   clientType: 'APP',
@@ -233,6 +242,7 @@ const resetForm = () => {
     sort: undefined,
     description: undefined,
     systemMessage: undefined,
+    userMessage: undefined,
     publicStatus: true,
     status: CommonStatusEnum.ENABLE,
     clientType: 'APP',

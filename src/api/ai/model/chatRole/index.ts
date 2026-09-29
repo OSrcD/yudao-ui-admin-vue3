@@ -10,6 +10,7 @@ export interface ChatRoleVO {
   sort: number // 角色排序
   description: string // 角色描述
   systemMessage: string // 角色设定
+  userMessage?: string // 用户提示词设定模版
   welcomeMessage: string // 角色设定
   publicStatus: boolean // 是否公开
   status: number // 状态

@@ -83,6 +83,7 @@
       <el-table-column label="角色类别" align="center" prop="category" />
       <el-table-column label="角色描述" align="center" prop="description" />
       <el-table-column label="角色设定" align="center" prop="systemMessage" />
+      <el-table-column label="用户提示词" align="center" prop="userMessage" />
       <el-table-column label="知识库" align="center" prop="knowledgeIds">
         <template #default="scope">
           <span v-if="!scope.row.knowledgeIds || scope.row.knowledgeIds.length === 0">-</span>
