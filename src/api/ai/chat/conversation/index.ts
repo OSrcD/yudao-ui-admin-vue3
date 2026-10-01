@@ -14,6 +14,7 @@ export interface ChatConversationVO {
   maxTokens: number // 单条回复的最大 Token 数量
   maxContexts: number // 上下文的最大 Message 数量
   createTime?: Date // 创建时间
+  updateTime?: Date // 更新时间/最后活跃时间
   // 额外字段
   systemMessage?: string // 角色设定
   modelName?: string // 模型名字

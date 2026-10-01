@@ -552,6 +552,8 @@ const stopStream = async () => {
   }
   // 设置为 false
   conversationInProgress.value = false
+  // 刷新左侧会话列表（使当前产生新对话的会话立即置顶并更新条数）
+  conversationListRef.value?.getChatConversationList()
 }
 
 /** 编辑 message：设置为 prompt，可以再次编辑 */

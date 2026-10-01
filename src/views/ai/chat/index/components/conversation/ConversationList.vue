@@ -207,12 +207,18 @@ const getAccountDisplay = (conversation: ChatConversationVO) => {
   return '默认用户'
 }
 
+/** 获取对话最新活跃时间戳（支持多轮对话时按最后更新时间排序） */
+const getActiveTime = (conv: ChatConversationVO) => {
+  const t = conv.updateTime || conv.createTime
+  return t ? new Date(t).getTime() : 0
+}
+
 /** 搜索对话 */
 const searchConversation = async (_e?: any) => {
   // 恢复数据
   const keyword = searchName.value.trim().toLowerCase()
   if (!keyword.length) {
-    conversationMap.value = await getConversationGroupByCreateTime(conversationList.value)
+    conversationMap.value = await getConversationGroupByActiveTime(conversationList.value)
   } else {
     // 过滤：支持标题、账号昵称、用户名、手机号搜索
     const filterValues = conversationList.value.filter((item) => {
@@ -222,7 +228,7 @@ const searchConversation = async (_e?: any) => {
       const matchMobile = item.userMobile && item.userMobile.includes(keyword)
       return matchTitle || matchNickname || matchUserName || matchMobile
     })
-    conversationMap.value = await getConversationGroupByCreateTime(filterValues)
+    conversationMap.value = await getConversationGroupByActiveTime(filterValues)
   }
 }
 
@@ -251,9 +257,12 @@ const getChatConversationList = async () => {
 
     // 1.1 获取 对话数据
     conversationList.value = await ChatConversationApi.getChatConversationMyList()
-    // 1.2 排序
+    // 1.2 排序：置顶优先，其次按最新活跃时间倒序（多轮对话最新发消息排在最前面）
     conversationList.value.sort((a, b) => {
-      return b.createTime - a.createTime
+      if (Boolean(a.pinned) !== Boolean(b.pinned)) {
+        return a.pinned ? -1 : 1
+      }
+      return getActiveTime(b) - getActiveTime(a)
     })
     // 1.3 没有任何对话情况
     if (conversationList.value.length === 0) {
@@ -262,8 +271,8 @@ const getChatConversationList = async () => {
       return
     }
 
-    // 2. 对话根据时间分组(置顶、今天、一天前、三天前、七天前、30 天前)
-    conversationMap.value = await getConversationGroupByCreateTime(conversationList.value)
+    // 2. 对话根据最新活跃时间分组(置顶、今天、一天前、三天前、七天前、30 天前)
+    conversationMap.value = await getConversationGroupByActiveTime(conversationList.value)
   } finally {
     // 清理定时器
     if (loadingTime.value) {
@@ -274,8 +283,8 @@ const getChatConversationList = async () => {
   }
 }
 
-/** 按照 creteTime 创建时间，进行分组 */
-const getConversationGroupByCreateTime = async (list: ChatConversationVO[]) => {
+/** 按照最新活跃时间，进行分组 */
+const getConversationGroupByActiveTime = async (list: ChatConversationVO[]) => {
   // 排序、指定、时间分组(今天、一天前、三天前、七天前、30天前)
   // noinspection NonAsciiCharacters
   const groupMap = {
@@ -299,8 +308,8 @@ const getConversationGroupByCreateTime = async (list: ChatConversationVO[]) => {
       groupMap['置顶'].push(conversation)
       continue
     }
-    // 计算时间差（单位：毫秒）
-    const diff = now - conversation.createTime
+    // 计算时间差（单位：毫秒，基于最新活跃时间）
+    const diff = now - getActiveTime(conversation)
     // 根据时间间隔判断
     if (diff < oneDay) {
       groupMap['今天'].push(conversation)
@@ -416,7 +425,7 @@ watch(activeId, async (newValue, oldValue) => {
 })
 
 // 定义 public 方法
-defineExpose({ createConversation })
+defineExpose({ createConversation, getChatConversationList })
 
 /** 初始化 */
 onMounted(async () => {
