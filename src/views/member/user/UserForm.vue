@@ -66,6 +66,13 @@
       <el-form-item label="AI发送上限" prop="aiChatMaxCount">
         <el-input-number v-model="formData.aiChatMaxCount" :min="0" placeholder="请输入AI最大发送次数" />
       </el-form-item>
+      <el-form-item label="专业版用户" prop="isPro">
+        <el-switch
+          v-model="formData.isPro"
+          active-text="专业版（开通AI私信等功能）"
+          inactive-text="普通版"
+        />
+      </el-form-item>
       <el-form-item label="会员备注" prop="mark">
         <el-input type="textarea" v-model="formData.mark" placeholder="请输入会员备注" />
       </el-form-item>
@@ -105,7 +112,8 @@ const formData = ref({
   mark: undefined,
   tagIds: [],
   groupId: undefined,
-  aiChatMaxCount: undefined
+  aiChatMaxCount: undefined,
+  isPro: false
 })
 const formRules = reactive({
   mobile: [{ required: true, message: '手机号不能为空', trigger: 'blur' }],
@@ -176,7 +184,9 @@ const resetForm = () => {
     birthday: undefined,
     mark: undefined,
     tagIds: [],
-    groupId: undefined
+    groupId: undefined,
+    aiChatMaxCount: undefined,
+    isPro: false
   }
   formRef.value?.resetFields()
 }

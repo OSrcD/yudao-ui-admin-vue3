@@ -107,6 +107,14 @@
       </el-table-column>
       <el-table-column align="center" label="积分" prop="point" width="100px" />
       <el-table-column align="center" label="AI发送上限" prop="aiChatMaxCount" width="100px" />
+      <el-table-column align="center" label="专业版" prop="isPro" width="95px">
+        <template #default="scope">
+          <el-tag v-if="scope.row.isPro" type="danger" effect="dark" size="small">
+            专业版
+          </el-tag>
+          <el-tag v-else type="info" size="small">普通版</el-tag>
+        </template>
+      </el-table-column>
       <el-table-column align="center" label="VIP" width="160px">
         <template #default="scope">
           <el-tag :type="scope.row.vipActive ? 'success' : 'info'" size="small">

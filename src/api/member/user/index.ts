@@ -23,6 +23,8 @@ export interface UserVO {
   vipExpireTime?: string | null
   vipTrialUsed?: boolean | null
   vipActive?: boolean | null
+  isPro?: boolean | null
+  aiChatMaxCount?: number | null
 }
 
 // 查询会员用户列表
