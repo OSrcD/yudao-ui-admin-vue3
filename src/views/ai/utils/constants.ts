@@ -21,7 +21,8 @@ export const AiPlatformEnum = {
   Ollama: 'Ollama',
   STABLE_DIFFUSION: 'StableDiffusion', // Stability AI
   MIDJOURNEY: 'Midjourney', // Midjourney
-  SUNO: 'Suno' // Suno AI
+  SUNO: 'Suno', // Suno AI
+  COMMAND_CODE: 'CommandCode' // Command Code
 }
 
 export const AiModelTypeEnum = {
