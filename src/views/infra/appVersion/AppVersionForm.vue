@@ -49,20 +49,20 @@
         </el-col>
       </el-row>
 
-      <el-form-item label="上传 APK 包">
+      <el-form-item :label="`上传 ${packageLabel} 包`">
         <el-upload
           ref="apkUploadRef"
           :action="uploadUrl"
           :http-request="handleApkHttpRequest"
           :before-upload="handleApkBeforeUpload"
           :show-file-list="false"
-          :accept="'.apk'"
+          :accept="packageExt"
           :disabled="formLoading || isCalculatingHash"
         >
           <div class="flex items-center gap-10px">
             <el-button type="primary" :loading="isUploadingApk || isCalculatingHash">
               <Icon icon="ep:upload-filled" class="mr-5px" />
-              {{ isCalculatingHash ? '正在计算 SHA256...' : (isUploadingApk ? `上传中 (${uploadPercent}%)` : '选取并上传 APK') }}
+              {{ isCalculatingHash ? '正在计算 SHA256...' : (isUploadingApk ? `上传中 (${uploadPercent}%)` : `选取并上传 ${packageLabel}`) }}
             </el-button>
             <span v-if="formData.downloadUrl" class="text-13px text-green-600 flex items-center">
               <Icon icon="ep:circle-check-filled" class="mr-3px" /> 已就绪
@@ -70,14 +70,18 @@
           </div>
           <template #tip>
             <div class="text-12px text-gray-400 mt-4px leading-relaxed">
-              选取 APK 后，系统将<b>自动计算 SHA-256 校验码</b>并<b>填入安装包大小</b>
+              选取 {{ packageLabel }} 后，系统将<b>自动计算 SHA-256 校验码</b>并<b>填入安装包大小</b>
             </div>
           </template>
         </el-upload>
       </el-form-item>
 
       <el-form-item label="应用内升级链接" prop="downloadUrl">
-        <el-input v-model="formData.downloadUrl" placeholder="http://.../app-release.apk（对应弹窗【立即升级】使用的安装包直链）" clearable />
+        <el-input
+          v-model="formData.downloadUrl"
+          :placeholder="isIosPlatform ? 'http://.../autoft.ipa（对应【复制链接到电脑下载】及浏览器回退直链）' : 'http://.../app-release.apk（对应弹窗【立即升级】使用的安装包直链）'"
+          clearable
+        />
       </el-form-item>
 
       <el-form-item label="浏览器下载链接" prop="browserDownloadUrl">
@@ -98,7 +102,18 @@
           </template>
         </el-input>
         <div class="text-12px text-gray-400 mt-4px leading-relaxed">
-          💡 对应客户端弹窗中提供的两个选择：<b>【立即升级】</b>使用上方安装包直链在应用内下载；<b>【通过浏览器下载】</b>可直接设置为本应用下载链接（点击右侧一键设为本包直链），或自定义第三方网盘/分发链接。
+          💡 对应客户端弹窗中的选择：<b>【立即升级 / 复制链接到电脑下载】</b>使用上方安装包直链；<b>【浏览器下载】</b>可直接设置为本应用下载链接，或自定义第三方网盘/分发链接。
+        </div>
+      </el-form-item>
+
+      <el-form-item label="全能签下载链接" prop="qnqDownloadUrl">
+        <el-input
+          v-model="formData.qnqDownloadUrl"
+          placeholder="选填（仅 iOS）：填写跳全能签的中转网页链接，客户端点击后先跳浏览器再跳全能签"
+          clearable
+        />
+        <div class="text-12px text-gray-400 mt-4px leading-relaxed">
+          💡 仅 iOS 端生效：配置后会额外展示<b>【跳转到全能签下载】</b>选项，点击先打开系统浏览器访问该链接，再由网页跳转全能签。
         </div>
       </el-form-item>
 
@@ -125,27 +140,27 @@
           clearable
         >
           <template #append>
-            <div class="flex items-center">
+            <div class="flex items-center gap-4px whitespace-nowrap">
               <el-upload
                 :show-file-list="false"
                 :auto-upload="false"
                 :on-change="handleQuickApkSha256"
-                :accept="'.apk'"
-                class="inline-block"
+                :accept="packageExt"
+                class="inline-flex"
               >
-                <el-button type="primary" link :loading="isCalculatingHash">
-                  <Icon icon="ep:lightning" class="mr-3px" /> 选本地 APK 算
+                <el-button type="primary" link class="!px-4px whitespace-nowrap" :loading="isCalculatingHash">
+                  <Icon icon="ep:lightning" class="mr-3px" /> 选本地 {{ packageLabel }} 算
                 </el-button>
               </el-upload>
-              <el-divider direction="vertical" class="mx-6px" />
+              <el-divider direction="vertical" class="!mx-2px" />
               <el-upload
                 :show-file-list="false"
                 :auto-upload="false"
                 :on-change="handleHashFileImport"
                 :accept="'.sha1,.sha256,.txt'"
-                class="inline-block"
+                class="inline-flex"
               >
-                <el-button type="primary" link>
+                <el-button type="primary" link class="!px-4px whitespace-nowrap">
                   <Icon icon="ep:document" class="mr-3px" /> 选哈希文件
                 </el-button>
               </el-upload>
@@ -153,7 +168,7 @@
           </template>
         </el-input>
         <div class="text-12px text-gray-400 mt-4px leading-relaxed">
-          💡 <b>提示</b>：<code>ota_update</code> 插件严格要求 <b>64 位 SHA-256</b>。如果本地只有 Flutter 生成的 40 位 <code>.sha1</code> 文件，请直接点击【选本地 APK 算】，浏览器本地毫秒级算出真实的 SHA-256！
+          💡 <b>提示</b>：<code>ota_update</code> 插件严格要求 <b>64 位 SHA-256</b>。如果本地只有 Flutter 生成的 40 位 <code>.sha1</code> 文件，请直接点击【选本地 {{ packageLabel }} 算】，浏览器本地毫秒级算出真实的 SHA-256！
         </div>
       </el-form-item>
 
@@ -174,7 +189,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import { useMessage } from '@/hooks/web/useMessage'
 import { useUpload } from '@/components/UploadFile/src/useUpload'
 import * as AppVersionApi from '@/api/infra/appVersion'
@@ -202,12 +217,17 @@ const formData = ref<AppVersionApi.AppVersionVO>({
   minVersionCode: 1,
   downloadUrl: '',
   browserDownloadUrl: '',
+  qnqDownloadUrl: '',
   fileSize: '',
   fileSha256: '',
   description: '',
   forceUpdate: false,
   status: 0
 })
+
+const isIosPlatform = computed(() => formData.value.platform === 'ios')
+const packageLabel = computed(() => (isIosPlatform.value ? 'IPA' : 'APK'))
+const packageExt = computed(() => (isIosPlatform.value ? '.ipa' : '.apk'))
 
 const formRules = reactive({
   appCode: [{ required: true, message: '应用标识不能为空', trigger: 'blur' }],
@@ -231,11 +251,11 @@ const computeSha256 = async (file: File): Promise<string> => {
 }
 
 /**
- * APK 上传前拦截：提取大小并自动计算 SHA-256
+ * 安装包上传前拦截：提取大小并自动计算 SHA-256
  */
 const handleApkBeforeUpload = async (file: File) => {
-  if (!file.name.toLowerCase().endsWith('.apk')) {
-    message.error('请选择 .apk 文件')
+  if (!file.name.toLowerCase().endsWith(packageExt.value)) {
+    message.error(`请选择 ${packageExt.value} 文件`)
     return false
   }
   // 1. 自动填包体大小
@@ -254,7 +274,7 @@ const handleApkBeforeUpload = async (file: File) => {
 }
 
 /**
- * APK 上传请求
+ * 安装包上传请求
  */
 const handleApkHttpRequest = async (options: any) => {
   isUploadingApk.value = true
@@ -268,26 +288,30 @@ const handleApkHttpRequest = async (options: any) => {
   try {
     const res: any = await httpRequest(options)
     formData.value.downloadUrl = res.data
-    message.success('APK 上传成功，大小与 SHA-256 已自动就绪！')
+    message.success(`${packageLabel.value} 上传成功，大小与 SHA-256 已自动就绪！`)
   } catch (e: any) {
-    message.error('APK 上传失败: ' + (e.message || e))
+    message.error(`${packageLabel.value} 上传失败: ` + (e.message || e))
   } finally {
     isUploadingApk.value = false
   }
 }
 
 /**
- * 用户纯计算本地 APK 的 SHA-256（不上传文件，适合已填好链接只需补哈希值的场景）
+ * 用户纯计算本地安装包的 SHA-256（不上传文件，适合已填好链接只需补哈希值的场景）
  */
 const handleQuickApkSha256 = async (uploadFile: any) => {
   const file = uploadFile.raw as File
   if (!file) return
+  if (!file.name.toLowerCase().endsWith(packageExt.value)) {
+    message.error(`请选择 ${packageExt.value} 文件`)
+    return
+  }
   formData.value.fileSize = (file.size / (1024 * 1024)).toFixed(1) + 'MB'
   isCalculatingHash.value = true
   try {
     const sha256 = await computeSha256(file)
     formData.value.fileSha256 = sha256
-    message.success('已自动根据所选 APK 提取大小并计算出 SHA-256！')
+    message.success(`已自动根据所选 ${packageLabel.value} 提取大小并计算出 SHA-256！`)
   } catch (e) {
     message.error('计算失败: ' + e)
   } finally {
@@ -373,6 +397,7 @@ const resetForm = () => {
     minVersionCode: 1,
     downloadUrl: '',
     browserDownloadUrl: '',
+    qnqDownloadUrl: '',
     fileSize: '',
     fileSha256: '',
     description: '',

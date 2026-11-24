@@ -9,6 +9,7 @@ export interface AppVersionVO {
   minVersionCode: number
   downloadUrl: string
   browserDownloadUrl?: string
+  qnqDownloadUrl?: string
   fileSize?: string
   fileSha256?: string
   description?: string
